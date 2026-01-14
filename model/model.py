@@ -1,5 +1,6 @@
 import networkx as nx
 from database.dao import DAO
+from geopy import distance
 
 class Model:
     def __init__(self):
@@ -15,6 +16,10 @@ class Model:
         self.dic_states_shapes= {}
 
         self.dic_sight_state= {}
+
+        self.sequenza_ottima = []
+        self.distanza_ottima = -1
+        self.lista_distanze= []
 
     def get_years(self):
         lista_years = set()
@@ -104,6 +109,51 @@ class Model:
             result[n] = peso
 
         return result
+
+
+    def get_percorso_ottimo(self):
+        self.sequenza_ottima= []
+        self.distanza_ottima= -1
+        self.lista_distanze= []
+
+        for n in self.G.nodes():
+            self.ricorsione([n], 0, [])
+        return self.sequenza_ottima, self.distanza_ottima, self.lista_distanze
+
+
+    def ricorsione(self, sequenza_parziale, distanza_parziale, lista_distanze):
+
+        if distanza_parziale > self.distanza_ottima:
+            self.distanza_ottima = distanza_parziale
+            self.sequenza_ottima = list(sequenza_parziale)
+            self.lista_distanze = list(lista_distanze)
+
+
+        n= sequenza_parziale[-1]
+        for v in self.G.neighbors(n):
+            if len(sequenza_parziale) <2:
+                distanza_nodi = distance.geodesic((n.lat, n.lng), (v.lat, v.lng)).km
+                sequenza_parziale.append(v)
+                lista_distanze.append(distanza_nodi)
+                self.ricorsione(sequenza_parziale, distanza_parziale + distanza_nodi, lista_distanze)
+                sequenza_parziale.pop()
+                lista_distanze.pop()
+
+
+
+            else:
+                if self.G[n][v]['weight'] > self.G[sequenza_parziale[-2]][n]['weight']:
+                    distanza_nodi = distance.geodesic((n.lat, n.lng), (v.lat, v.lng)).km
+                    lista_distanze.append(distanza_nodi)
+                    sequenza_parziale.append(v)
+                    self.ricorsione(sequenza_parziale, distanza_parziale + distanza_nodi, lista_distanze)
+                    sequenza_parziale.pop()
+                    lista_distanze.pop()
+
+
+
+
+
 
 
 

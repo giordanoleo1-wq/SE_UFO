@@ -57,4 +57,25 @@ class Controller:
     def handle_path(self, e):
         """ Handler per gestire il problema ricorsivo di ricerca del cammino """
         # TODO
+        self._view.lista_visualizzazione_2.clean()
+
+        sequenza, peso, distanze= self._model.get_percorso_ottimo()
+
+        self._view.lista_visualizzazione_2.controls.append(ft.Text(f"Peso cammino massimo: {peso}"))
+
+        for i in range(len(sequenza) -1):
+            n1= sequenza[i]
+            n2= sequenza[i+1]
+
+            peso= self._model.G[n1][n2]['weight']
+            distanza= distanze[i]
+
+            self._view.lista_visualizzazione_2.controls.append(ft.Text(f"{n1.id} -- {n2.id}, weight: {peso}, distance: {distanza}"))
+        self._view.update()
+
+
+
+
+
+
 
